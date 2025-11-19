@@ -106,7 +106,7 @@ def plot_rf_vs_defaultable(params: DisasterModelParams, tau: float = 5.0):
     plt.ylabel("Bond price")
     plt.title(rf"Risk-free vs defaultable bond ($\tau = {tau}$ years, $\lambda^g$ fixed)")
     plt.legend()
-    plt.grid(True)
+    plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.show()
 
@@ -142,7 +142,7 @@ def plot_gamma_sensitivity(params_base: DisasterModelParams, tau: float = 5.0):
     plt.ylabel("Defaultable bond price")
     plt.title(rf"Sensitivity to risk aversion $\gamma$ ($\tau={tau}$ years)")
     plt.legend()
-    plt.grid(True)
+    plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig("/Users/aryaman/honors/draft2/figures/defaultable_gamma_sensitivity.png")
     plt.show()
@@ -158,13 +158,13 @@ def plot_yields_and_spread_vs_lambda_f(params: DisasterModelParams,
     ax1.plot(lam_f_vals, y_rf, label=r"Risk-free yield")
     ax1.plot(lam_f_vals, y_d, label=r"Defaultable yield")
     ax1.set_xlabel(r"Foreign disaster intensity $\lambda^f$")
-    ax1.set_ylabel(r"Yield (percent per year)")
+    ax1.set_ylabel(r"Yield (annual %)")
     ax1.set_title(rf"Implied yields and credit spread ($\tau={tau}$ years)")
     ax1.grid(True)
 
     ax2 = ax1.twinx()
-    ax2.plot(lam_f_vals, spread, label=r"Yield spread", color="black", alpha=0.7)
-    ax2.set_ylabel(r"Yield spread (percent)")
+    ax2.plot(lam_f_vals, spread, label=r"Yield spread (%)", color="black", alpha=0.7, linestyle="--")
+    ax2.set_ylabel(r"Yield spread (%)")
 
     
     lines_1, labels_1 = ax1.get_legend_handles_labels()
@@ -207,6 +207,27 @@ def plot_param_sensitivity_defaultable(params_base: DisasterModelParams,
     plt.savefig(f"/Users/aryaman/honors/draft2/figures/defaultable_sensitivity_{param_name}.png")
     plt.show()
 
+def plot_short_rate_vs_lambda_f(params: DisasterModelParams,
+                                lam_f_max: float = 0.2):
+    lam_f_vals = np.linspace(0.0, lam_f_max, 200)
+
+    params.compute_b_sdf()
+    C_r = np.exp(params.b_sdf * params.v - params.gamma * params.Z) * (np.exp(params.Z) - 1)
+    A_r = params.beta + params.mu - params.gamma * params.sigma_c**2
+    lam_g = params.lam_bar_g
+    r_vals = A_r + C_r * (lam_f_vals + lam_g)
+
+    plt.figure()
+    plt.plot(lam_f_vals, r_vals, color="blue", label=r"Foreign short rate $r_t^*$")
+    plt.xlabel(r"Foreign disaster intensity $\lambda^f$")
+    plt.ylabel(r"Short rate $r_t^*$")
+    plt.title(r"Foreign short rate $r_t^*$ as function of $\lambda^f$")
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("/Users/aryaman/honors/draft2/figures/short_rate_vs_lambda_f.png")
+    plt.show()
+
 
 if __name__ == "__main__":
     params = DisasterModelParams()
@@ -216,6 +237,7 @@ if __name__ == "__main__":
     # plot_defaultable_heatmap(params, tau=tau)
     plot_gamma_sensitivity(params, tau=tau)
     plot_yields_and_spread_vs_lambda_f(params, tau=tau)
+    plot_short_rate_vs_lambda_f(params)
 
     plot_param_sensitivity_defaultable(params, tau, "beta", [0.01, 0.02, 0.03])
     plot_param_sensitivity_defaultable(params, tau, "mu", [0.005, 0.015, 0.025])
@@ -225,5 +247,6 @@ if __name__ == "__main__":
     # plot_param_sensitivity_defaultable(params, tau, "sigma_lambda", [0.05, 0.1, 0.2])
     plot_param_sensitivity_defaultable(params, tau, "v", [0.005, 0.01, 0.05])
     plot_param_sensitivity_defaultable(params, tau, "R", [0.2, 0.4, 0.6])
-    plot_param_sensitivity_defaultable(params, tau, "eta1", [0.3, 0.6, 1.0])
-    plot_param_sensitivity_defaultable(params, tau, "eta2", [0.4, 0.8, 1.2])
+    plot_param_sensitivity_defaultable(params, tau, "eta1", [1, 1.5, 2, 2.5])
+    plot_param_sensitivity_defaultable(params, tau, "eta2", [1, 1.5, 2, 2.5])
+    

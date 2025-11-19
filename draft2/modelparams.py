@@ -20,8 +20,8 @@ class DisasterModelParams:
     # Default/hazard structure
     R: float = 0.4          # recovery of market value (RMV) R
     h0_star: float = 0.02   # baseline hazard h*_0
-    eta1: float = 0.6       # loading on λ_f in hazard
-    eta2: float = 0.8       # loading on λ_g in hazard
+    eta1: float = 1.5       # loading on λ_f in hazard
+    eta2: float = 1         # loading on λ_g in hazard
 
     # Constant b in the SDF 
     b_sdf: float = None    
