@@ -108,6 +108,7 @@ def plot_rf_vs_defaultable(params: DisasterModelParams, tau: float = 5.0):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
+    plt.savefig("/Users/aryaman/honors/draft2/figures/rf_vs_defaultable_prices.png")
     plt.show()
 
 def plot_defaultable_heatmap(params: DisasterModelParams, tau: float = 5.0):
@@ -160,7 +161,7 @@ def plot_yields_and_spread_vs_lambda_f(params: DisasterModelParams,
     ax1.set_xlabel(r"Foreign disaster intensity $\lambda^f$")
     ax1.set_ylabel(r"Yield (annual %)")
     ax1.set_title(rf"Implied yields and credit spread ($\tau={tau}$ years)")
-    ax1.grid(True)
+    ax1.grid(True, alpha=0.3)
 
     ax2 = ax1.twinx()
     ax2.plot(lam_f_vals, spread, label=r"Yield spread (%)", color="black", alpha=0.7, linestyle="--")
