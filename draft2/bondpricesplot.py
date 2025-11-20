@@ -162,15 +162,9 @@ def plot_yields_and_spread_vs_lambda_f(params: DisasterModelParams,
     ax1.set_ylabel(r"Yield (annual %)")
     ax1.set_title(rf"Implied yields and credit spread ($\tau={tau}$ years)")
     ax1.grid(True, alpha=0.3)
-
-    ax2 = ax1.twinx()
-    ax2.plot(lam_f_vals, spread, label=r"Yield spread (%)", color="black", alpha=0.7, linestyle="--")
-    ax2.set_ylabel(r"Yield spread (%)")
-
-    
-    lines_1, labels_1 = ax1.get_legend_handles_labels()
-    lines_2, labels_2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc="upper left")
+    ax1.plot(lam_f_vals, spread, label=r"Yield spread (%)", color="black", alpha=0.7, linestyle="--")
+    ax1.plot(lam_f_vals, np.zeros(len(lam_f_vals)), color="black", alpha=0.7, linewidth=0.7)
+    ax1.legend(loc="upper left")
 
     fig.tight_layout()
     plt.savefig("/Users/aryaman/honors/draft2/figures/yields_and_spread_vs_lambda_f.png")
@@ -234,10 +228,10 @@ if __name__ == "__main__":
     params = DisasterModelParams()
     tau = 5.0  
 
+    plot_yields_and_spread_vs_lambda_f(params, tau=tau)
     plot_rf_vs_defaultable(params, tau=tau)
     # plot_defaultable_heatmap(params, tau=tau)
     plot_gamma_sensitivity(params, tau=tau)
-    plot_yields_and_spread_vs_lambda_f(params, tau=tau)
     plot_short_rate_vs_lambda_f(params)
 
     plot_param_sensitivity_defaultable(params, tau, "beta", [0.01, 0.02, 0.03])
