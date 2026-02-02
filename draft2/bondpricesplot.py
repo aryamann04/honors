@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from dataclasses import replace
 from scipy.integrate import solve_ivp
 
-from modelparams import DisasterModelParams
+from params.modelparams import DisasterModelParams
 
 def get_riskfree_coeffs(params: DisasterModelParams, tau: float):
     params.compute_b_sdf()
@@ -150,7 +150,7 @@ def plot_gamma_sensitivity(params_base: DisasterModelParams, tau: float = 5.0):
 
 def plot_yields_and_spread_vs_lambda_f(params: DisasterModelParams,
                                        tau: float = 5.0,
-                                       lam_f_max: float = 0.2):
+                                       lam_f_max: float = 0.1):
     lam_f_vals = np.linspace(0.0, lam_f_max, 200)
     B_rf_vals, B_d_vals = compute_bond_prices_vs_lambda_f(params, tau, lam_f_vals)
     y_rf, y_d, spread = compute_yields_from_prices(B_rf_vals, B_d_vals, tau)
@@ -175,7 +175,7 @@ def plot_param_sensitivity_defaultable(params_base: DisasterModelParams,
                                     tau: float,
                                     param_name: str,
                                     param_values,
-                                    lam_f_max: float = 0.2):
+                                    lam_f_max: float = 0.1):
     lam_f_vals = np.linspace(0.0, lam_f_max, 200)
     lam_g_fixed = params_base.lam_bar_g
 
@@ -203,7 +203,7 @@ def plot_param_sensitivity_defaultable(params_base: DisasterModelParams,
     plt.show()
 
 def plot_short_rate_vs_lambda_f(params: DisasterModelParams,
-                                lam_f_max: float = 0.2):
+                                lam_f_max: float = 0.1):
     lam_f_vals = np.linspace(0.0, lam_f_max, 200)
 
     params.compute_b_sdf()
@@ -223,11 +223,39 @@ def plot_short_rate_vs_lambda_f(params: DisasterModelParams,
     plt.savefig("/Users/aryaman/honors/draft2/figures/short_rate_vs_lambda_f.png")
     plt.show()
 
+def plot_short_rate_hazard_and_sum(params: DisasterModelParams,
+                                   lam_f_max: float = 0.1):
+    lam_f_vals = np.linspace(0.0, lam_f_max, 300)
+    params.compute_b_sdf()
+
+    C_r = np.exp(params.b_sdf * params.v - params.gamma * params.Z) * (np.exp(params.Z) - 1)
+    A_r = params.beta + params.mu - params.gamma * params.sigma_c**2
+    lam_g = params.lam_bar_g
+
+    r_vals = A_r + C_r * (lam_f_vals + lam_g)
+    h_vals = params.h0_star + params.eta1 * lam_f_vals + params.eta2 * lam_g
+    adj_vals = r_vals + (1 - params.R) * h_vals
+
+    plt.figure()
+    plt.plot(lam_f_vals, r_vals, label=r"$r_t^*$", linewidth=2)
+    plt.plot(lam_f_vals, (1-params.R)*h_vals, label=r"$(1-R)h_t^*$", linewidth=2)
+    plt.plot(lam_f_vals, adj_vals, label=r"$r_t^* + (1-R)h_t^*$", linewidth=2)
+
+    plt.xlabel(r"Foreign disaster intensity $\lambda^f$")
+    plt.ylabel(r"Rate (annualized)")
+    plt.title(r"Short rate, hazard-adjusted short rate, and sum vs $\lambda^f$")
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("/Users/aryaman/honors/draft2/figures/short_rate_hazard_sum_vs_lambda_f.png")
+    plt.show()
+
 
 if __name__ == "__main__":
     params = DisasterModelParams()
     tau = 5.0  
 
+    plot_short_rate_hazard_and_sum(params)
     plot_yields_and_spread_vs_lambda_f(params, tau=tau)
     plot_rf_vs_defaultable(params, tau=tau)
     # plot_defaultable_heatmap(params, tau=tau)
