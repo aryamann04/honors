@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -376,7 +375,7 @@ def plot_loading_functions(params):
 # ---------------------------------------------------------------------
 
 def plot_yield_and_spread_term_structures(params):
-    tau_grid = np.linspace(0.5, 10.0, 120)
+    tau_grid = np.linspace(0.5, 50.0, 120)
     lam_h, lam_g, lam_f = params.lam_bar_h, params.lam_bar_g, params.lam_bar_f
 
     curves = compute_yield_term_structures(params, tau_grid, lam_h, lam_g, lam_f)
