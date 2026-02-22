@@ -6,22 +6,22 @@ from scipy.optimize import brentq
 @dataclass
 class DisasterModelParams:
     # Preferences / consumption
-    beta: float = 0.02      # subjective discount rate β
-    gamma: float = 4.0      # risk aversion γ
-    mu: float = 0.0218      # drift of log consumption μ
-    sigma_c: float = 0.009  # consumption volatility σ
-    Z: float = -0.20        # disaster jump in log consumption (negative)
+    beta: float = 0.012     # subjective discount rate β
+    gamma: float = 3.0      # risk aversion γ
+    mu: float = 0.0252      # drift of log consumption μ
+    sigma_c: float = 0.02   # consumption volatility σ
+    Z: float = -0.31        # disaster jump in log consumption (negative)
     rho_C: float = 0.3      # correlation between foreign and domestic consumption shocks
     phi: float = 2.5        # leverage ratio
     mu_D: float = phi * mu + 0.5 * phi * (phi - 1) * (sigma_c ** 2)   # drift of log dividends
 
     # Disaster intensity dynamics (foreign/global)
-    kappa: float = 0.146            # mean reversion of λ
-    lam_bar_f: float = 0.017 * 0.06 # long-run mean of foreign intensity λ̄^f
-    lam_bar_g: float = 0.017 * 0.94 # long-run mean of global intensity λ̄^g
-    lam_bar_h: float = 0.017 * 0.06 # long-run mean of hazard intensity λ̄^h
-    sigma_lambda: float = 0.09      # volatility of intensity σ_λ
-    v: float = 0            # jump size in intensity when a disaster hits
+    kappa: float = 0.08              # mean reversion of λ
+    lam_bar_f: float = 0.0355 * 0.06 # long-run mean of foreign intensity λ̄^f
+    lam_bar_g: float = 0.0355 * 0.94 # long-run mean of global intensity λ̄^g
+    lam_bar_h: float = 0.0355 * 0.06 # long-run mean of hazard intensity λ̄^h
+    sigma_lambda: float = 0.067      # volatility of intensity σ_λ
+    v: float = 0                     # jump size in intensity when a disaster hits
 
     # Default/hazard structure
     R: float = 0.4          # recovery of market value (RMV) R
@@ -46,8 +46,19 @@ class DisasterModelParams:
         A = beta + kappa + v
 
         if v == 0:
-            self.b_sdf = ( (beta + kappa) + np.sqrt((beta + kappa) ** 2 - 2 * sigma_l ** 2 * (np.exp((1 - gamma) * Z) - 1)) ) / (sigma_l ** 2)
-            return self.b_sdf
+            disc = (beta + kappa) ** 2 - 2.0 * sigma_l ** 2 * (np.exp((1.0 - gamma) * Z) - 1.0)
+            if disc <= 0.0:
+                raise RuntimeError("No real solution for b_sdf (v=0).")
+            s = np.sqrt(disc)
+            b_plus = ((beta + kappa) + s) / (sigma_l ** 2)
+            b_minus = ((beta + kappa) - s) / (sigma_l ** 2)
+            if b_minus * (sigma_l ** 2) - kappa < 0.0:
+                self.b_sdf = float(b_minus)
+                return self.b_sdf
+            if b_plus * (sigma_l ** 2) - kappa < 0.0:
+                self.b_sdf = float(b_plus)
+                return self.b_sdf
+            raise RuntimeError(f"Both roots give b * (sigma_l ** 2) - kappa >=0; no global-maturity closed form.")
 
         def f(b):
             return (
