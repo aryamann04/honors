@@ -16,7 +16,7 @@ if PARENT_DIR not in sys.path:
 
 from params.modelparams import DisasterModelParams
 
-FIGDIR = os.path.join(BASE_DIR, "figures")
+FIGDIR = os.path.join(BASE_DIR, "figures_v=0")
 
 # ---------------------------------------------------------------------
 # Core coefficient ODEs
@@ -375,7 +375,7 @@ def plot_loading_functions(params):
 # ---------------------------------------------------------------------
 
 def plot_yield_and_spread_term_structures(params):
-    tau_grid = np.linspace(0.5, 50.0, 120)
+    tau_grid = np.linspace(0.5, 10.0, 120)
     lam_h, lam_g, lam_f = params.lam_bar_h, params.lam_bar_g, params.lam_bar_f
 
     curves = compute_yield_term_structures(params, tau_grid, lam_h, lam_g, lam_f)
