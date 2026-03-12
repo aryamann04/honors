@@ -12,7 +12,7 @@ class DisasterModelParams:
     sigma_c: float = 0.02   # consumption volatility σ
     Z: float = -0.31        # disaster jump in log consumption (negative)
     rho_C: float = 0.3      # correlation between foreign and domestic consumption shocks
-    phi: float = 2.5        # leverage ratio
+    phi: float = 2.6        # leverage ratio
     mu_D: float = phi * mu + 0.5 * phi * (phi - 1) * (sigma_c ** 2)   # drift of log dividends
 
     # Disaster intensity dynamics (foreign/global)
@@ -26,8 +26,8 @@ class DisasterModelParams:
     # Default/hazard structure
     R: float = 0.4          # recovery of market value (RMV) R
     h0_star: float = 0.02   # baseline hazard h*_0
-    eta1: float = 2         # loading on λ_f in hazard
-    eta2: float = 1         # loading on λ_g in hazard
+    eta1: float = 1         # loading on λ_f in hazard
+    eta2: float = 0.5         # loading on λ_g in hazard
 
     # Constant b in the SDF 
     b_sdf: float = None    
