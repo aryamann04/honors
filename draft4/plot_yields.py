@@ -85,4 +85,4 @@ def main(max_tau=50.0):
     plot_yield_term_structures(params, max_tau)
 
 if __name__ == "__main__":
-    main(max_tau=30.0)
+    main(max_tau=60.0)

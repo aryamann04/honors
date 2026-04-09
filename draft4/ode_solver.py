@@ -98,7 +98,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda ** 2 * b_f
             + 0.5 * params.sigma_lambda ** 2 * b_f ** 2
             + C * (np.exp(b_f * params.v) - np.exp(params.Z))
-            - Af
+            - (1.0 - params.R) * params.eta1
         )
 
         db_g = (
@@ -106,7 +106,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda ** 2 * b_g
             + 0.5 * params.sigma_lambda ** 2 * b_g ** 2
             + C * (np.exp(b_g * params.v) - np.exp(params.Z))
-            - Ag
+            - (1.0 - params.R) * params.eta2
         )
 
         da = params.kappa * (
@@ -154,7 +154,6 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + 0.5 * sigma_l ** 2 * b_h ** 2
             + np.exp(bbar * v - params.gamma * params.Z)
             * (np.exp(b_h * v) - np.exp(params.Z))
-            - Ah_q
         )
 
         db_g = (
@@ -162,7 +161,7 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + 0.5 * sigma_l ** 2 * b_g ** 2
             + np.exp(bbar * v - params.gamma * params.Z)
             * (np.exp(b_g * v) - np.exp(params.Z))
-            - Ag_q
+            - (1.0 - params.R) * params.eta2
         )
 
         db_f = (
@@ -269,7 +268,7 @@ def _estimate_blowup_time_defaultable(params: DisasterModelParams, tau_max=500.0
             + bbar * params.sigma_lambda ** 2 * b
             + 0.5 * params.sigma_lambda ** 2 * b ** 2
             + C * (np.exp(b * params.v) - np.exp(params.Z))
-            - Af
+            - (1.0 - params.R) * params.eta1
         )
 
     def F_g(b):
@@ -278,7 +277,7 @@ def _estimate_blowup_time_defaultable(params: DisasterModelParams, tau_max=500.0
             + bbar * params.sigma_lambda ** 2 * b
             + 0.5 * params.sigma_lambda ** 2 * b ** 2
             + C * (np.exp(b * params.v) - np.exp(params.Z))
-            - Ag
+            - (1.0 - params.R) * params.eta2
         )
 
     est_f = _estimate_blowup_time_scalar_ode(F_f, b0=0.0, tau_max=tau_max, b_danger=200.0, b_big=4000.0)
@@ -306,7 +305,6 @@ def _estimate_blowup_time_quanto(params: DisasterModelParams, tau_max=500.0):
             (bbar * sigma_l ** 2 - kappa - v) * b
             + 0.5 * sigma_l ** 2 * b ** 2
             + np.exp(bbar * v - params.gamma * params.Z) * (np.exp(b * v) - np.exp(params.Z))
-            - Ah_q
         )
 
     def F_g(b):
@@ -314,7 +312,7 @@ def _estimate_blowup_time_quanto(params: DisasterModelParams, tau_max=500.0):
             (bbar * sigma_l ** 2 - kappa - v) * b
             + 0.5 * sigma_l ** 2 * b ** 2
             + np.exp(bbar * v - params.gamma * params.Z) * (np.exp(b * v) - np.exp(params.Z))
-            - Ag_q
+            - (1.0 - params.R) * params.eta2
         )
 
     def F_f(b):
