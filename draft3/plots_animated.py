@@ -117,7 +117,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda**2 * b_f
             + 0.5 * params.sigma_lambda**2 * b_f**2
             + C * (np.exp(b_f * params.v) - np.exp(params.Z))
-            - Af
+            - (1.0 - params.R) * params.eta1
         )
 
         db_g = (
@@ -125,7 +125,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda**2 * b_g
             + 0.5 * params.sigma_lambda**2 * b_g**2
             + C * (np.exp(b_g * params.v) - np.exp(params.Z))
-            - Ag
+            - (1.0 - params.R) * params.eta2
         )
 
         da = params.kappa * (
@@ -176,7 +176,6 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + 0.5 * sigma_l**2 * b_h**2
             + np.exp(bbar * v - params.gamma * params.Z)
             * (np.exp(b_h * v) - np.exp(params.Z))
-            - Ah_q
         )
 
         db_g = (
@@ -184,7 +183,7 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + 0.5 * sigma_l**2 * b_g**2
             + np.exp(bbar * v - params.gamma * params.Z)
             * (np.exp(b_g * v) - np.exp(params.Z))
-            - Ag_q
+            - (1.0 - params.R) * params.eta2
         )
 
         db_f = (

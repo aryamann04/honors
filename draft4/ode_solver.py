@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from params.modelparams import DisasterModelParams
 
+
 def _solve_ode(ode, tau, y0):
     sol = solve_ivp(
         ode,
@@ -12,6 +13,7 @@ def _solve_ode(ode, tau, y0):
         atol=1e-12,
     )
     return sol.y[:, -1]
+
 
 def get_riskfree_coeffs(params: DisasterModelParams, tau: float):
     params.compute_b_sdf()
@@ -41,6 +43,7 @@ def get_riskfree_coeffs(params: DisasterModelParams, tau: float):
     a_tau, b_tau = _solve_ode(ode, tau, [0.0, 0.0])
     return a_tau, b_tau
 
+
 def get_domestic_riskfree_coeffs(params: DisasterModelParams, tau: float):
     params.compute_b_sdf()
     bbar = params.b_sdf
@@ -69,20 +72,25 @@ def get_domestic_riskfree_coeffs(params: DisasterModelParams, tau: float):
     a_tau, b_tau = _solve_ode(ode, tau, [0.0, 0.0])
     return a_tau, b_tau
 
-def hazard_affine_coeffs(params: DisasterModelParams):
-    params.compute_b_sdf()
-    bbar = params.b_sdf
-    C = np.exp(bbar * params.v - params.gamma * params.Z) * (np.exp(params.Z) - 1.0)
 
+def hazard_affine_coeffs(params: DisasterModelParams):
+    """Affine coefficients in r + (1-R)h.
+
+    A0 is the constant term. The returned Af and Ag are the hazard-load pieces
+    that remain in the Riccati ODE after collecting terms, i.e. (1-R)eta_i.
+    This matches the corrected math where the risk-free K-term is not
+    double-counted.
+    """
     A0 = (
         params.beta
         + params.mu
         - params.gamma * params.sigma_c ** 2
         + (1.0 - params.R) * params.h0_star
     )
-    Af = C + (1.0 - params.R) * params.eta1
-    Ag = C + (1.0 - params.R) * params.eta2
+    Af = (1.0 - params.R) * params.eta1
+    Ag = (1.0 - params.R) * params.eta2
     return A0, Af, Ag
+
 
 def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
     params.compute_b_sdf()
@@ -98,7 +106,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda ** 2 * b_f
             + 0.5 * params.sigma_lambda ** 2 * b_f ** 2
             + C * (np.exp(b_f * params.v) - np.exp(params.Z))
-            - (1.0 - params.R) * params.eta1
+            - Af
         )
 
         db_g = (
@@ -106,7 +114,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda ** 2 * b_g
             + 0.5 * params.sigma_lambda ** 2 * b_g ** 2
             + C * (np.exp(b_g * params.v) - np.exp(params.Z))
-            - (1.0 - params.R) * params.eta2
+            - Ag
         )
 
         da = params.kappa * (
@@ -121,21 +129,26 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
     a_tau, b_f_tau, b_g_tau = _solve_ode(ode, tau, [0.0, 0.0, 0.0])
     return a_tau, b_f_tau, b_g_tau
 
-def quanto_affine_coeffs(params: DisasterModelParams):
-    params.compute_b_sdf()
-    bbar = params.b_sdf
-    C = np.exp(bbar * params.v - params.gamma * params.Z) * (np.exp(params.Z) - 1.0)
 
+def quanto_affine_coeffs(params: DisasterModelParams):
+    """Affine coefficients for the quanto bond.
+
+    Ah_q, Ag_q, Af_q are the residual hazard-load pieces in the corrected ODEs:
+      h: 0,
+      g: (1-R)eta_g,
+      f: (1-R)eta_f.
+    """
     A0_q = (
         params.beta
         + params.mu
         - params.gamma * params.sigma_c ** 2
         + (1.0 - params.R) * params.h0_star
     )
-    Ah_q = C
-    Ag_q = C + (1.0 - params.R) * params.eta2
+    Ah_q = 0.0
+    Ag_q = (1.0 - params.R) * params.eta2
     Af_q = (1.0 - params.R) * params.eta1
-    return A0_q, Ah_q, Ag_q, Af_q, C
+    return A0_q, Ah_q, Ag_q, Af_q
+
 
 def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
     params.compute_b_sdf()
@@ -144,7 +157,8 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
     kappa = params.kappa
     v = params.v
 
-    A0_q, Ah_q, Ag_q, Af_q, C = quanto_affine_coeffs(params)
+    A0_q, Ah_q, Ag_q, Af_q = quanto_affine_coeffs(params)
+    C = np.exp(bbar * v - params.gamma * params.Z)
 
     def ode(tau_local, y):
         a, b_h, b_g, b_f = y
@@ -152,16 +166,15 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
         db_h = (
             (bbar * sigma_l ** 2 - kappa - v) * b_h
             + 0.5 * sigma_l ** 2 * b_h ** 2
-            + np.exp(bbar * v - params.gamma * params.Z)
-            * (np.exp(b_h * v) - np.exp(params.Z))
+            + C * (np.exp(b_h * v) - np.exp(params.Z))
+            - Ah_q
         )
 
         db_g = (
             (bbar * sigma_l ** 2 - kappa - v) * b_g
             + 0.5 * sigma_l ** 2 * b_g ** 2
-            + np.exp(bbar * v - params.gamma * params.Z)
-            * (np.exp(b_g * v) - np.exp(params.Z))
-            - (1.0 - params.R) * params.eta2
+            + C * (np.exp(b_g * v) - np.exp(params.Z))
+            - Ag_q
         )
 
         db_f = (
@@ -187,6 +200,8 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
     )
     return a_tau, b_h_tau, b_g_tau, b_f_tau
 
+
+# blow-up utilities ---------------------------------------------------
 
 def _hit_time_to_level(F, b0, level, tau_max, method="Radau"):
     def event(t, y):
@@ -243,7 +258,6 @@ def _estimate_blowup_time_riskfree(params: DisasterModelParams, domestic=False, 
     params.compute_b_sdf()
     bbar = params.b_sdf
     C = np.exp(bbar * params.v - params.gamma * params.Z)
-    lam_bar_total = (params.lam_bar_h + params.lam_bar_g) if domestic else (params.lam_bar_f + params.lam_bar_g)
 
     def F(b):
         return (
@@ -260,7 +274,7 @@ def _estimate_blowup_time_defaultable(params: DisasterModelParams, tau_max=500.0
     params.compute_b_sdf()
     bbar = params.b_sdf
     C = np.exp(bbar * params.v - params.gamma * params.Z)
-    A0, Af, Ag = hazard_affine_coeffs(params)
+    _, Af, Ag = hazard_affine_coeffs(params)
 
     def F_f(b):
         return (
@@ -268,7 +282,7 @@ def _estimate_blowup_time_defaultable(params: DisasterModelParams, tau_max=500.0
             + bbar * params.sigma_lambda ** 2 * b
             + 0.5 * params.sigma_lambda ** 2 * b ** 2
             + C * (np.exp(b * params.v) - np.exp(params.Z))
-            - (1.0 - params.R) * params.eta1
+            - Af
         )
 
     def F_g(b):
@@ -277,7 +291,7 @@ def _estimate_blowup_time_defaultable(params: DisasterModelParams, tau_max=500.0
             + bbar * params.sigma_lambda ** 2 * b
             + 0.5 * params.sigma_lambda ** 2 * b ** 2
             + C * (np.exp(b * params.v) - np.exp(params.Z))
-            - (1.0 - params.R) * params.eta2
+            - Ag
         )
 
     est_f = _estimate_blowup_time_scalar_ode(F_f, b0=0.0, tau_max=tau_max, b_danger=200.0, b_big=4000.0)
@@ -298,21 +312,23 @@ def _estimate_blowup_time_quanto(params: DisasterModelParams, tau_max=500.0):
     sigma_l = params.sigma_lambda
     kappa = params.kappa
     v = params.v
-    A0_q, Ah_q, Ag_q, Af_q, C0 = quanto_affine_coeffs(params)
+    _, Ah_q, Ag_q, Af_q = quanto_affine_coeffs(params)
+    C = np.exp(bbar * v - params.gamma * params.Z)
 
     def F_h(b):
         return (
             (bbar * sigma_l ** 2 - kappa - v) * b
             + 0.5 * sigma_l ** 2 * b ** 2
-            + np.exp(bbar * v - params.gamma * params.Z) * (np.exp(b * v) - np.exp(params.Z))
+            + C * (np.exp(b * v) - np.exp(params.Z))
+            - Ah_q
         )
 
     def F_g(b):
         return (
             (bbar * sigma_l ** 2 - kappa - v) * b
             + 0.5 * sigma_l ** 2 * b ** 2
-            + np.exp(bbar * v - params.gamma * params.Z) * (np.exp(b * v) - np.exp(params.Z))
-            - (1.0 - params.R) * params.eta2
+            + C * (np.exp(b * v) - np.exp(params.Z))
+            - Ag_q
         )
 
     def F_f(b):

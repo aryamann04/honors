@@ -114,7 +114,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda ** 2 * b_f
             + 0.5 * params.sigma_lambda ** 2 * b_f ** 2
             + C * (np.exp(b_f * params.v) - np.exp(params.Z))
-            - Af
+            - (1.0 - params.R) * params.eta1
         )
 
         db_g = (
@@ -122,7 +122,7 @@ def get_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + bbar * params.sigma_lambda ** 2 * b_g
             + 0.5 * params.sigma_lambda ** 2 * b_g ** 2
             + C * (np.exp(b_g * params.v) - np.exp(params.Z))
-            - Ag
+            - (1.0 - params.R) * params.eta2
         )
 
         da = params.kappa * (
@@ -173,7 +173,6 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + 0.5 * sigma_l ** 2 * b_h ** 2
             + np.exp(bbar * v - params.gamma * params.Z)
             * (np.exp(b_h * v) - np.exp(params.Z))
-            - Ah_q
         )
 
         db_g = (
@@ -181,7 +180,7 @@ def get_quanto_defaultable_coeffs(params: DisasterModelParams, tau: float):
             + 0.5 * sigma_l ** 2 * b_g ** 2
             + np.exp(bbar * v - params.gamma * params.Z)
             * (np.exp(b_g * v) - np.exp(params.Z))
-            - Ag_q
+            - (1.0 - params.R) * params.eta2
         )
 
         db_f = (
@@ -290,7 +289,7 @@ def compute_yield_term_structures(params, tau_grid, lam_h, lam_g, lam_f):
 # ---------------------------------------------------------------------
 
 def plot_bond_price_term_structures(params):
-    tau_grid = np.linspace(0.25, 10.0, 120)
+    tau_grid = np.linspace(0.25, 30.0, 120)
     lam_h, lam_g, lam_f = params.lam_bar_h, params.lam_bar_g, params.lam_bar_f
 
     B_star, B_dom, B_D_star, B_quanto = compute_bond_term_structures(
@@ -375,7 +374,7 @@ def plot_loading_functions(params):
 # ---------------------------------------------------------------------
 
 def plot_yield_and_spread_term_structures(params):
-    tau_grid = np.linspace(0.5, 10.0, 120)
+    tau_grid = np.linspace(0.5, 30.0, 120)
     lam_h, lam_g, lam_f = params.lam_bar_h, params.lam_bar_g, params.lam_bar_f
 
     curves = compute_yield_term_structures(params, tau_grid, lam_h, lam_g, lam_f)
@@ -435,7 +434,7 @@ def compute_sensitivities_vs_tau(params, tau_grid, lam_h, lam_g, lam_f):
 
 
 def plot_sensitivities(params):
-    tau_grid = np.linspace(0.5, 10.0, 120)
+    tau_grid = np.linspace(0.5, 30.0, 120)
     lam_h, lam_g, lam_f = params.lam_bar_h, params.lam_bar_g, params.lam_bar_f
 
     dBD_dlamf, dBq_dlamf, dBq_dlamg, dBq_dlamh = compute_sensitivities_vs_tau(
@@ -482,7 +481,7 @@ def plot_sensitivities(params):
 def plot_quanto_basis_profiles(params):
     lam_h, lam_g, lam_f = params.lam_bar_h, params.lam_bar_g, params.lam_bar_f
 
-    tau_grid = np.linspace(0.5, 10.0, 120)
+    tau_grid = np.linspace(0.5, 30.0, 120)
     curves = compute_yield_term_structures(params, tau_grid, lam_h, lam_g, lam_f)
     q_tilde = curves["q_tilde"]
 
