@@ -1,0 +1,20 @@
+\begin{table}[H]
+\centering
+\caption{Observed and model-implied CDS term-structure slope diagnostics.}
+\label{tab:cds_term_structure_fit}
+\begin{tabular}{llrrrrrr}
+\toprule
+Country & Group & Mean obs slope (bps) & Mean model slope (bps) & Slope error (bps) & Corr$_{5Y}$ & RMSE$_{5Y}$ (bps) & RMSE$_\text{all}$ (bps) \\
+\midrule
+US & Dev & 65.5 & 5.0 & -60.6 & 0.800 & 24.27 & 33.34 \\
+DE & Dev & 32.4 & 3.0 & -29.4 & 0.732 & 16.79 & 19.33 \\
+UK & Dev & 37.0 & 3.0 & -34.1 & 0.849 & 16.10 & 19.24 \\
+CL & Eme & 92.3 & 6.7 & -85.7 & 0.597 & 22.67 & 37.34 \\
+ID & Eme & 145.8 & 12.7 & -133.1 & 0.813 & 69.66 & 86.20 \\
+TR & Eme & 178.0 & 21.5 & -156.5 & 0.425 & 137.97 & 152.44 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item Slope = 10Y minus 1Y CDS spread; positive value means upward-sloping. Slope error = model slope minus observed slope. Corr$_{5Y}$: Pearson correlation of model vs.\ observed 5-year CDS spreads.
+\end{tablenotes}
+\end{table}
