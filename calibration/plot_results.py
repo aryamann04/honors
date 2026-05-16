@@ -55,8 +55,8 @@ SIM_5Y_CSV     = os.path.join(BASE_DIR, "results", "simulation", "simulated_5y_a
 FIGS_DIR       = os.path.join(BASE_DIR, "results", "figures")
 
 # ── Country groupings ────────────────────────────────────────────────────────
-DEVELOPED = ["US", "DE", "UK", "JP", "FR", "NL", "SE"]
-EMERGING  = ["BR", "CL", "ES", "ID", "MX", "MY", "TH", "TR"]
+DEVELOPED = ["US", "DE", "UK", "JP", "FR", "NL", "ES", "SE"]
+EMERGING  = ["BR", "CL", "ID", "MX", "MY", "TH", "TR"]
 ALL_15    = DEVELOPED + EMERGING
 CORE      = ["US", "DE", "UK", "CL", "ID", "TR"]
 GROUP_MAP = {c: "Developed" for c in DEVELOPED}
@@ -484,7 +484,7 @@ def plot_flight_to_quality_global_shock(
     country_p:    dict[str, DisasterModelParams],
 ) -> None:
     """RF yield, defaultable yield, and credit spread curves at 3 global disaster states."""
-    countries_ftq = ["US", "DE", "TR"]
+    countries_ftq = ["US", "TR"]
     tau_grid = np.array([1.0, 2.0, 3.0, 5.0, 7.0, 10.0])
 
     # Global disaster state percentiles

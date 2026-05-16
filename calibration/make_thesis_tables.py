@@ -47,8 +47,8 @@ TABLES_DIR     = os.path.join(BASE_DIR, "results", "tables")
 LATEX_DIR      = os.path.join(TABLES_DIR, "latex")
 
 # ── Country groupings ────────────────────────────────────────────────────────
-DEVELOPED = ["US", "DE", "UK", "JP", "FR", "NL", "SE"]
-EMERGING  = ["BR", "CL", "ES", "ID", "MX", "MY", "TH", "TR"]
+DEVELOPED = ["US", "DE", "UK", "JP", "FR", "NL", "SE", "ES"]
+EMERGING  = ["BR", "CL", "ID", "MX", "MY", "TH", "TR"]
 ALL_15    = DEVELOPED + EMERGING
 CORE      = ["US", "DE", "UK", "CL", "ID", "TR"]
 GROUP_MAP = {c: "Developed" for c in DEVELOPED}
